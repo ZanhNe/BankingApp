@@ -1,0 +1,71 @@
+//-------------------------------------------------------------------------------------------------------------------------//
+                                                ARRAYS
+1.Slice method
+- Dùng để cắt array dựa theo index start, index end. Điều này chỉ cắt và sao chép ra 1 array khác chứ không làm thay đổi arr gốc
+
+    VD : const arr = [1, 2, 3, 4, 5];
+    console.log(arr.slice()) //[1, 2, 3, 4, 5] : tương tự shallow copy
+    console.log(arr.slice(0,3))  //[1, 2, 3];
+    console.log(arr.slice(3)) //[4, 5];
+    console.log(arr.slice(-3)) //[3, 4, 5];
+    console.log(arr.slice(0, -2)) //[1, 2];
+
+2.Splice method
+-Dùng để cắt array, giống với slice nhưng làm ảnh hưởng array gốc
+    start: index bắt đầu cắt (nếu start >= 0 thì tính từ đầu tới cuối array, nếu start < 0 tính từ cuối arr đi lên)
+    deleteCount: cắt bao nhiêu element
+    item1...itemN: element muốn insert vào array, tính từ vị trí start index
+    
+    splice(start)
+    splice(start, deleteCount)
+    splice(start, deleteCount, item1)
+    splice(start, deleteCount, item1, item2)
+    splice(start, deleteCount, item1, item2, /* …, */ itemN)
+
+    VD : const arr = [1, 2, 3, 4, 5];
+    console.log(arr.splice(2)); //[3, 4, 5];
+    console.log(arr) //[1, 2]; bị cắt nên còn nhiêu đây
+    arr.splice(0,0,6,7,8)
+    console.log(arr) //[6, 7, 8, 1, 2]; vì cắt từ 0, nhưng deleteCount : 0 tức là ko cắt element nào, thêm 3 item
+
+3.Reverse
+-Dùng để đảo ngược array (cũng làm thay đổi array gốc)
+    const arr = [1, 2, 3, 4, 5];
+    console.log(arr.reverse()) //[5, 4, 3, 2, 1];
+-Nếu muốn reverse mà không ảnh hưởng array gốc thì --> Deep copy / Shallow copy ra 1 array khác (slice, spread, ...)
+
+4.Concat 
+-Dùng để kết hợp các arrays
+    const arr1 = [1, 2, 3];
+    const arr2 = [4, 5, 6];
+    const fullArr = arr1.concat(arr2); // tương tự như : [...arr1, ...arr2];
+    console.log(fullArr) // [1, 2, 3, 4, 5, 6] //Cũng là shallow cop
+
+5.Join
+-Dùng để nối lại các element trong array theo một kí tự chỉ định nào đó --> Trả ra string (đã từng học trong string method)
+    const first = ['a', 'b', 'c'];
+    const second = ['d', 'e', 'f'];
+    const letters = [...first, ...second].join(' '); //Hoặc dùng concat() đều được
+    console.log(letters) // a b c d e f 
+
+6.Push
+-Dùng để đẩy element vào array theo cơ chế LIFO (đẩy vào cuối)
+
+7.Pop 
+-Dùng để lấy element ra khỏi array theo cơ chế LIFO (lấy cuối) 
+
+8.Shift
+-Dùng để đẩy element vào đầu array
+
+9.UnShift 
+-Dùng để lấy element từ đầu array
+
+10. At 
+-Dùng để lấy ra element tại index mình muốn, có thể dùng : index >= 0 || index < 0 --> < 0 thì tính từ cuối array như thường lệ
+VD : const arr = [1, 2, 3, 4, 5];
+    console.log(arr.at(0)) // 1
+    console.log(arr.at(-1)) // 5
+
+    
+
+
