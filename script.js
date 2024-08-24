@@ -165,25 +165,15 @@ const change = function (number) {
 
 const addElement = function (value, date, order) {
   const type = (value < 0 && withdrawal) || deposit;
-  const movementRow = document.createElement('div');
-  const movementType = document.createElement('div');
-  const movementDate = document.createElement('div');
-  const movementValue = document.createElement('div');
-
-  movementRow.classList.add(`movements__row`);
-  movementType.classList.add(`movements__type`);
-  movementType.classList.add(`movements__type--${type}`);
-  movementDate.classList.add(`movements__date`);
-  movementValue.classList.add(`movements__value`);
-
-  movementValue.textContent = change(value);
-  movementDate.textContent = `${date}`;
-  movementType.textContent = `${order + 1} ${type}`;
-  movementRow.appendChild(movementType);
-  movementRow.appendChild(movementDate);
-  movementRow.appendChild(movementValue);
-
-  return movementRow;
+  return (movementRow = `
+        <div class="movements__row">
+          <div class="movements__type movements__type--${type}">${
+    order + 1
+  } ${type}</div>
+          <div class="movements__date">${date}</div>
+          <div class="movements__value">${change(value)}</div>
+        </div>
+  `);
 };
 
 const init = function () {
@@ -244,7 +234,8 @@ btnLogin.addEventListener('click', function (e) {
         ? (money[0] += moneyTrans[index])
         : (money[1] += moneyTrans[index]);
       money[2] = money[0] + money[1];
-      containerMovements.appendChild(
+      containerMovements.insertAdjacentHTML(
+        'beforeend',
         addElement(moneyTrans[index], dateMove[index], index)
       );
     }
@@ -342,7 +333,8 @@ btnSort.addEventListener('click', e => {
   e.preventDefault();
   setTimeout(() => {
     for (let index = copArr.length - 1; index >= 0; index--) {
-      containerMovements.appendChild(
+      containerMovements.insertAdjacentHTML(
+        'afterbegin',
         addElement(copArr[index], dateMove[index], index)
       );
     }

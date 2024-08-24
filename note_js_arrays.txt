@@ -66,6 +66,13 @@ VD : const arr = [1, 2, 3, 4, 5];
     console.log(arr.at(0)) // 1
     console.log(arr.at(-1)) // 5
 
+11.indexOf 
+-Dùng để get ra vị trí của element mà mình muốn search.
+VD : console.log(arr.indexOf(1)) --> 0;
+Lưu ý : array có tính chất như thế nào --> Dùng tính chất đó để search
+        VD: array chứa object thì : nó phải search theo object (và dĩ nhiên là search theo ref (khác ref thì không phải))
+
+
     
 
 
