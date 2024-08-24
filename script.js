@@ -199,9 +199,9 @@ const displayTransaction = function ({
 }) {
   label1.textContent = change(value1);
   label2.textContent = change(value2);
-  container.insertBefore(
-    addElement(totalBalance, dateTrans, size),
-    container.firstChild
+  container.insertAdjacentHTML(
+    'afterbegin',
+    addElement(totalBalance, dateTrans, size)
   );
 };
 
@@ -334,7 +334,7 @@ btnSort.addEventListener('click', e => {
   setTimeout(() => {
     for (let index = copArr.length - 1; index >= 0; index--) {
       containerMovements.insertAdjacentHTML(
-        'afterbegin',
+        'beforeend',
         addElement(copArr[index], dateMove[index], index)
       );
     }
