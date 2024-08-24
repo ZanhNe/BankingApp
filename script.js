@@ -324,7 +324,7 @@ btnLoan.addEventListener('click', e => {
   }
 });
 
-//Logout
+//Delete account
 btnClose.addEventListener('click', e => {
   e.preventDefault();
   const username = inputCloseUsername.value;
@@ -333,6 +333,7 @@ btnClose.addEventListener('click', e => {
   if (currentAccount.username === username && currentAccount.pin === pin) {
     setTimeout(reset, 500);
     containerApp.style.opacity = 0;
+    accounts.splice(accounts.indexOf(currentAccount), 1); //remove this account from original data
   }
 });
 
