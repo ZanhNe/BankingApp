@@ -165,7 +165,7 @@ const change = function (number) {
 
 const addElement = function (value, date, order) {
   const type = (value < 0 && withdrawal) || deposit;
-  return (movementRow = `
+  return `
         <div class="movements__row">
           <div class="movements__type movements__type--${type}">${
     order + 1
@@ -173,7 +173,7 @@ const addElement = function (value, date, order) {
           <div class="movements__date">${date}</div>
           <div class="movements__value">${change(value)}</div>
         </div>
-  `);
+  `;
 };
 
 const init = function () {
