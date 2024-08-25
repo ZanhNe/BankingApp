@@ -103,7 +103,7 @@ let moneyTrans;
 let dateMove;
 let currentAccount;
 let countdown = 100;
-let money = [0, 0, 0];
+let summary = [0, 0, 0];
 let date = new Date();
 const formatter = new Intl.DateTimeFormat('en-GB', {
   hour: '2-digit',
@@ -113,15 +113,10 @@ const formattedTime = formatter.format(date);
 
 const accounts = [account1, account2, account3, account4];
 
-//Add username to account object
-for (const account of accounts) {
-  let username = '';
-  const arrName = account['owner'].split(' ');
-  for (const name of arrName) {
-    username += name.toLowerCase()[0];
-  }
-  account['username'] = username;
-}
+const change = function (number) {
+  let numberStr = String(number.toFixed(2));
+  return numberStr.replace('.', ',').concat(' €');
+};
 
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
@@ -138,31 +133,6 @@ function countDown(callback, seconds) {
   return callback(seconds);
 }
 
-function reset() {
-  money = [0, 0, 0];
-  currentAccount = undefined;
-  moneyTrans = undefined;
-  dateMove = undefined;
-  countdown = 100;
-  containerApp.style.opacity = 0;
-  const allLabelSummary = document.querySelectorAll('.summary__value');
-  const allInput = document.querySelectorAll('.login__input');
-
-  while (containerMovements.hasChildNodes())
-    containerMovements.removeChild(containerMovements.firstElementChild);
-
-  labelWelcome.textContent = `Log in to get started`; //Lời chào mừng
-  for (const el of allLabelSummary) el.textContent = `0000 €`;
-  for (const el of allInput) el.value = '';
-  loginForm.classList.toggle('hidden');
-  labelBalance.textContent = `0000 €`;
-}
-
-const change = function (number) {
-  let numberStr = String(number.toFixed(2));
-  return numberStr.replace('.', ',').concat(' €');
-};
-
 const addElement = function (value, date, order) {
   const type = (value < 0 && withdrawal) || deposit;
   return `
@@ -176,6 +146,32 @@ const addElement = function (value, date, order) {
   `;
 };
 
+const computingUsername = fullName => {
+  return fullName
+    .toLowerCase()
+    .split(' ')
+    .map(value => value[0])
+    .join('');
+};
+
+const reset = function () {
+  summary = [0, 0, 0];
+  currentAccount = undefined;
+  moneyTrans = undefined;
+  dateMove = undefined;
+  countdown = 100;
+  containerApp.style.opacity = 0;
+  const allLabelSummary = document.querySelectorAll('.summary__value');
+
+  containerMovements.innerHTML = ``;
+
+  labelWelcome.textContent = `Log in to get started`; //Lời chào mừng
+  for (const el of allLabelSummary) el.textContent = `0000 €`;
+  loginForm.classList.toggle('hidden');
+  labelBalance.textContent = `0000 €`;
+};
+
+//Load time and username
 const init = function () {
   window.addEventListener('load', () => {
     const time = setInterval(() => {
@@ -185,7 +181,11 @@ const init = function () {
       )}`;
     }, 1000);
   });
+  accounts.forEach(account => {
+    account['username'] = computingUsername(account.owner);
+  });
 };
+
 //display
 const displayTransaction = function ({
   label1,
@@ -205,11 +205,47 @@ const displayTransaction = function ({
   );
 };
 
+const setupTrans = function (label1, value1) {
+  const obj = {
+    label1: label1,
+    label2: labelBalance,
+    container: containerMovements,
+    value1: value1,
+    value2: summary[2],
+    totalBalance: moneyTrans.at(-1),
+    dateTrans: dateMove.at(-1),
+    size: moneyTrans.length - 1,
+  };
+  displayTransaction(obj);
+};
+
+const transaction = function (label1, summaryArr, pos, total) {
+  setTimeout(() => {
+    setupTrans(label1, summaryArr[pos]);
+  }, 3000);
+  dateMove.push(`${new Date().toLocaleString('en-GB', formattedTime)}`);
+  moneyTrans.push(total);
+  summaryArr[2] += total;
+  summaryArr[pos] += total;
+};
+
+//Get value from 2 label
+const getValueLabel = function (lbFirst, lbSecond) {
+  return [lbFirst.value, Number(lbSecond.value)];
+};
+
+//Get value from label and delete data on label
+const setupGetValue = function (lbFirst, lbSecond) {
+  const [firstValue, secondValue] = getValueLabel(lbFirst, lbSecond);
+  lbFirst.value = '';
+  lbSecond.value = '';
+  return [firstValue, secondValue];
+};
+
 //Login
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
-  const username = inputLoginUsername.value;
-  const pin = inputLoginPin.value;
+  const [username, pin] = setupGetValue(inputLoginUsername, inputLoginPin);
   currentAccount = accounts.find(function (element) {
     return element.username === username;
   });
@@ -217,28 +253,12 @@ btnLogin.addEventListener('click', function (e) {
 
   if (isCorrect) {
     setTimeout(() => {
-      labelSumIn.textContent = change(money[0]);
-      labelSumOut.textContent = change(money[1]);
-      labelBalance.textContent = change(money[2]); //Hiển thị tổng số tiền hiện tại
+      labelSumIn.textContent = change(summary[0]);
+      labelSumOut.textContent = change(summary[1]);
+      labelBalance.textContent = change(summary[2]); //Hiển thị tổng số tiền hiện tại
       labelWelcome.textContent = `Welcome, ${currentAccount.owner}`; //Lời chào mừng
+      loginForm.classList.toggle('hidden');
     }, 0);
-    loginForm.classList.toggle('hidden');
-    moneyTrans = currentAccount.movements;
-    dateMove = currentAccount.movementsDate;
-
-    //Hiển thị trang sau khi login
-    containerApp.style.opacity = 1;
-
-    for (let index = moneyTrans.length - 1; index >= 0; index--) {
-      moneyTrans[index] >= 0
-        ? (money[0] += moneyTrans[index])
-        : (money[1] += moneyTrans[index]);
-      money[2] = money[0] + money[1];
-      containerMovements.insertAdjacentHTML(
-        'beforeend',
-        addElement(moneyTrans[index], dateMove[index], index)
-      );
-    }
 
     const timeout = setInterval(() => {
       labelTimer.textContent = countDown(formatTime, countdown);
@@ -250,41 +270,45 @@ btnLogin.addEventListener('click', function (e) {
         containerApp.style.opacity = 0;
       }
     }, 1000);
+
+    moneyTrans = currentAccount.movements;
+    dateMove = currentAccount.movementsDate;
+
+    //Hiển thị trang sau khi login
+    containerApp.style.opacity = 1;
+    //Xóa element cũ
+    containerMovements.innerHTML = ``;
+
+    for (let index = moneyTrans.length - 1; index >= 0; index--) {
+      moneyTrans[index] >= 0
+        ? (summary[0] += moneyTrans[index])
+        : (summary[1] += moneyTrans[index]);
+      summary[2] = summary[0] + summary[1];
+      containerMovements.insertAdjacentHTML(
+        'beforeend',
+        addElement(moneyTrans[index], dateMove[index], index)
+      );
+    }
   }
 });
 
 //Transfer
 btnTransfer.addEventListener('click', e => {
   e.preventDefault();
-  const transTo = inputTransferTo.value;
-  const transAmount = Number(inputTransferAmount.value);
-  inputTransferTo.value = '';
-  inputTransferAmount.value = '';
-  if (money[2] >= transAmount) {
+  const [transTo, transAmount] = setupGetValue(
+    inputTransferTo,
+    inputTransferAmount
+  );
+  if (summary[2] >= transAmount) {
     const toPerson = accounts.find(element => {
       return element.username === transTo;
     });
     if (toPerson && toPerson !== currentAccount) {
+      transaction(labelSumOut, summary, 1, -transAmount);
       toPerson.movementsDate.push(
         `${new Date().toLocaleString('en-GB', formattedTime)}`
       );
       toPerson.movements.push(transAmount);
-      dateMove.push(`${new Date().toLocaleString('en-GB', formattedTime)}`);
-      moneyTrans.push(-transAmount);
-      money[2] += -transAmount;
-      money[1] += -transAmount;
-
-      const obj = {
-        label1: labelSumOut,
-        label2: labelBalance,
-        container: containerMovements,
-        value1: money[1],
-        value2: money[2],
-        totalBalance: moneyTrans.at(-1),
-        dateTrans: dateMove.at(-1),
-        size: moneyTrans.length - 1,
-      };
-      displayTransaction(obj);
     }
   }
 });
@@ -294,32 +318,15 @@ btnLoan.addEventListener('click', e => {
   e.preventDefault();
   const depositAmount = Number(inputLoanAmount.value);
   if (depositAmount > 0) {
-    setTimeout(() => {
-      const obj = {
-        label1: labelSumIn,
-        label2: labelBalance,
-        container: containerMovements,
-        value1: money[0],
-        value2: money[2],
-        totalBalance: moneyTrans.at(-1),
-        dateTrans: dateMove.at(-1),
-        size: moneyTrans.length - 1,
-      };
-      displayTransaction(obj);
-    }, 3000);
+    transaction(labelSumIn, summary, 0, depositAmount);
     inputLoanAmount.value = '';
-    moneyTrans.push(depositAmount);
-    dateMove.push(`${new Date().toLocaleString('en-GB', formattedTime)}`);
-    money[2] += depositAmount;
-    money[0] += depositAmount;
   }
 });
 
 //Delete account
 btnClose.addEventListener('click', e => {
   e.preventDefault();
-  const username = inputCloseUsername.value;
-  const pin = Number(inputClosePin.value);
+  const [username, pin] = setupGetValue(inputCloseUsername, inputClosePin);
 
   if (currentAccount.username === username && currentAccount.pin === pin) {
     setTimeout(reset, 500);
@@ -340,8 +347,7 @@ btnSort.addEventListener('click', e => {
     }
   }, 0);
   const copArr = currentAccount.movements.slice().sort((a, b) => a - b);
-  while (containerMovements.hasChildNodes())
-    containerMovements.removeChild(containerMovements.firstElementChild);
+  containerMovements.innerHTML = ``;
 });
 
 init();

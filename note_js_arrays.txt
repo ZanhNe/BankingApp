@@ -73,6 +73,14 @@ Lưu ý : array có tính chất như thế nào --> Dùng tính chất đó đ�
         VD: array chứa object thì : nó phải search theo object (và dĩ nhiên là search theo ref (khác ref thì không phải))
 
 
+Bonus: 
+-Có thể thêm element DOM bằng : Append, AppendChild(Node), insertAdjectHTML, innerHTML
+-Nếu có tác vụ nào đó cần phải loại bỏ những element cũ thì có thể xóa bằng : while loop + remove hoặc innerHTML = ``; (rcm 2)
+-innerHTML không chỉ đơn thuần trả về text của element đó, mà bao gồm cả thẻ HTML + text chứa bên trong nó, 
+    nên nhiều người dùng innerHTML để thêm element vào DOM
+
+
+
     
 
 
