@@ -99,11 +99,15 @@ const account4 = {
   pin: 4444,
 };
 
-let moneyTrans;
-let dateMove;
-let currentAccount;
-let countdown = 100;
-let summary = [0, 0, 0];
+//set appState for initial
+const appState = {
+  moneyTrans: undefined,
+  dateMove: undefined,
+  currentAccount: undefined,
+  countDown: 100,
+  summary: [0, 0, 0],
+};
+
 let date = new Date();
 const formatter = new Intl.DateTimeFormat('en-GB', {
   hour: '2-digit',
@@ -113,11 +117,13 @@ const formattedTime = formatter.format(date);
 
 const accounts = [account1, account2, account3, account4];
 
+//modify display number
 const change = function (number) {
   let numberStr = String(number.toFixed(2));
   return numberStr.replace('.', ',').concat(' €');
 };
 
+//convert from seconds to minutes
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
@@ -129,10 +135,12 @@ function formatTime(seconds) {
   return `${formattedMinutes}:${formattedSeconds}`;
 }
 
+//set countdown time
 function countDown(callback, seconds) {
   return callback(seconds);
 }
 
+//add new element DOM
 const addElement = function (value, date, order) {
   const type = (value < 0 && withdrawal) || deposit;
   return `
@@ -146,6 +154,7 @@ const addElement = function (value, date, order) {
   `;
 };
 
+//compute username from object's owner
 const computingUsername = fullName => {
   return fullName
     .toLowerCase()
@@ -155,11 +164,11 @@ const computingUsername = fullName => {
 };
 
 const reset = function () {
-  summary = [0, 0, 0];
-  currentAccount = undefined;
-  moneyTrans = undefined;
-  dateMove = undefined;
-  countdown = 100;
+  appState.moneyTrans = undefined;
+  appState.dateMove = undefined;
+  appState.summary = [0, 0, 0];
+  appState.currentAccount = undefined;
+  appState.countDown = 100;
   containerApp.style.opacity = 0;
   const allLabelSummary = document.querySelectorAll('.summary__value');
 
@@ -211,10 +220,10 @@ const setupTrans = function (label1, value1) {
     label2: labelBalance,
     container: containerMovements,
     value1: value1,
-    value2: summary[2],
-    totalBalance: moneyTrans.at(-1),
-    dateTrans: dateMove.at(-1),
-    size: moneyTrans.length - 1,
+    value2: appState.summary[2],
+    totalBalance: appState.moneyTrans.at(-1),
+    dateTrans: appState.dateMove.at(-1),
+    size: appState.moneyTrans.length - 1,
   };
   displayTransaction(obj);
 };
@@ -223,8 +232,10 @@ const transaction = function (label1, summaryArr, pos, total) {
   setTimeout(() => {
     setupTrans(label1, summaryArr[pos]);
   }, 3000);
-  dateMove.push(`${new Date().toLocaleString('en-GB', formattedTime)}`);
-  moneyTrans.push(total);
+  appState.dateMove.push(
+    `${new Date().toLocaleString('en-GB', formattedTime)}`
+  );
+  appState.moneyTrans.push(total);
   summaryArr[2] += total;
   summaryArr[pos] += total;
 };
@@ -242,53 +253,60 @@ const setupGetValue = function (lbFirst, lbSecond) {
   return [firstValue, secondValue];
 };
 
+//setup timeout session
+const timeoutSession = function (interval) {
+  labelTimer.textContent = countDown(formatTime, appState.countDown);
+  if (appState.countDown > 0) {
+    appState.countDown--;
+  } else {
+    clearInterval(interval);
+    setTimeout(reset, 500);
+    containerApp.style.opacity = 0;
+  }
+};
+//find account
+const getAccount = function (accounts, username) {
+  return accounts.find(acc => acc.username === username);
+};
+
 //Login
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
   const [username, pin] = setupGetValue(inputLoginUsername, inputLoginPin);
-  currentAccount = accounts.find(function (element) {
-    return element.username === username;
-  });
-  const isCorrect = currentAccount?.pin === Number(pin);
+  appState.currentAccount = getAccount(accounts, username);
+  appState.moneyTrans = appState.currentAccount?.movements;
+  appState.dateMove = appState.currentAccount?.movementsDate;
+  const isCorrect = appState.currentAccount?.pin === Number(pin);
 
   if (isCorrect) {
-    setTimeout(() => {
-      labelSumIn.textContent = change(summary[0]);
-      labelSumOut.textContent = change(summary[1]);
-      labelBalance.textContent = change(summary[2]); //Hiển thị tổng số tiền hiện tại
-      labelWelcome.textContent = `Welcome, ${currentAccount.owner}`; //Lời chào mừng
-      loginForm.classList.toggle('hidden');
-    }, 0);
-
+    //set timeout session
     const timeout = setInterval(() => {
-      labelTimer.textContent = countDown(formatTime, countdown);
-      if (countdown > 0) {
-        countdown--;
-      } else {
-        clearInterval(timeout);
-        setTimeout(reset, 500);
-        containerApp.style.opacity = 0;
-      }
+      timeoutSession(timeout);
     }, 1000);
 
-    moneyTrans = currentAccount.movements;
-    dateMove = currentAccount.movementsDate;
+    //async set display
+    setTimeout(() => {
+      labelSumIn.textContent = change(appState.summary[0]);
+      labelSumOut.textContent = change(appState.summary[1]);
+      labelBalance.textContent = change(appState.summary[2]); //Hiển thị tổng số tiền hiện tại
+      labelWelcome.textContent = `Welcome, ${appState.currentAccount.owner}`; //Lời chào mừng
+      loginForm.classList.toggle('hidden');
+      //Hiển thị trang sau khi login
+      containerApp.style.opacity = 1;
+    }, 0);
 
-    //Hiển thị trang sau khi login
-    containerApp.style.opacity = 1;
     //Xóa element cũ
     containerMovements.innerHTML = ``;
 
-    for (let index = moneyTrans.length - 1; index >= 0; index--) {
-      moneyTrans[index] >= 0
-        ? (summary[0] += moneyTrans[index])
-        : (summary[1] += moneyTrans[index]);
-      summary[2] = summary[0] + summary[1];
+    //calc balance, sum in, sum out
+    appState.summary[2] = appState.moneyTrans.reduce((acc, curr, index) => {
+      curr >= 0 ? (appState.summary[0] += curr) : (appState.summary[1] += curr);
       containerMovements.insertAdjacentHTML(
-        'beforeend',
-        addElement(moneyTrans[index], dateMove[index], index)
+        'afterbegin',
+        addElement(curr, appState.dateMove[index], index)
       );
-    }
+      return acc + curr;
+    }, 0);
   }
 });
 
@@ -299,12 +317,10 @@ btnTransfer.addEventListener('click', e => {
     inputTransferTo,
     inputTransferAmount
   );
-  if (summary[2] >= transAmount) {
-    const toPerson = accounts.find(element => {
-      return element.username === transTo;
-    });
-    if (toPerson && toPerson !== currentAccount) {
-      transaction(labelSumOut, summary, 1, -transAmount);
+  if (appState.summary[2] >= transAmount) {
+    const toPerson = getAccount(accounts, transTo);
+    if (toPerson && toPerson !== appState.currentAccount) {
+      transaction(labelSumOut, appState.summary, 1, -transAmount);
       toPerson.movementsDate.push(
         `${new Date().toLocaleString('en-GB', formattedTime)}`
       );
@@ -318,7 +334,7 @@ btnLoan.addEventListener('click', e => {
   e.preventDefault();
   const depositAmount = Number(inputLoanAmount.value);
   if (depositAmount > 0) {
-    transaction(labelSumIn, summary, 0, depositAmount);
+    transaction(labelSumIn, appState.summary, 0, depositAmount);
     inputLoanAmount.value = '';
   }
 });
@@ -327,11 +343,14 @@ btnLoan.addEventListener('click', e => {
 btnClose.addEventListener('click', e => {
   e.preventDefault();
   const [username, pin] = setupGetValue(inputCloseUsername, inputClosePin);
+  const isCorrect =
+    appState.currentAccount.username === username &&
+    appState.currentAccount.pin === pin;
 
-  if (currentAccount.username === username && currentAccount.pin === pin) {
+  if (isCorrect) {
     setTimeout(reset, 500);
     containerApp.style.opacity = 0;
-    accounts.splice(accounts.indexOf(currentAccount), 1); //remove this account from original data
+    accounts.splice(accounts.indexOf(appState.currentAccount), 1); //remove this account from original data
   }
 });
 
@@ -346,7 +365,7 @@ btnSort.addEventListener('click', e => {
       );
     }
   }, 0);
-  const copArr = currentAccount.movements.slice().sort((a, b) => a - b);
+  const copArr = appState.moneyTrans.slice().sort((a, b) => a - b);
   containerMovements.innerHTML = ``;
 });
 
