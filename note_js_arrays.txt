@@ -45,7 +45,7 @@
 -Dùng để nối lại các element trong array theo một kí tự chỉ định nào đó --> Trả ra string (đã từng học trong string method)
     const first = ['a', 'b', 'c'];
     const second = ['d', 'e', 'f'];
-    const letters = [...first, ...second].join(' '); //Hoặc dùng concat() đều được
+    const letters = [...first, ...second].join(' '); //Hoặc dùng concat() để nối 2 array xong join đều dc
     console.log(letters) // a b c d e f 
 
 6.Push
@@ -72,12 +72,46 @@ VD : console.log(arr.indexOf(1)) --> 0;
 Lưu ý : array có tính chất như thế nào --> Dùng tính chất đó để search
         VD: array chứa object thì : nó phải search theo object (và dĩ nhiên là search theo ref (khác ref thì không phải))
 
+12.map
+
+13.filter
+
+14.reduce
+
+15.find
+-Dùng để get ra element 
+VD : arrays.find((arr) => arr === 2) --> nhả ra 2
+
+16.findIndex
+-Dùng để get ra index của element
+VD : arrays.findIndex((arr) => arr === 2) --> nhả ra index : 1 vì value 2 nằm ở vị trí 1 trong arr trên
+
+17.some
+-Trả ra boolean thỏa condition nào đó
+-some : nếu trong 1 array có 1 condition nào đó dc thỏa mãn thì TRUE --> giống OR 
+        Nếu ko thì FALSE
+    arrays.some((value) => value > 4) --> true vì arr trên có 5 > 4
+
+18.every >< ngược lại với some 
+-every : nếu trong 1 array tất cả condition đều pass --> TRUE : giống AND 
+        nếu ko thì FALSE
+VD : arrays.every((value) => value > 4) --> false vì chỉ có 5 > 4 , còn lại <= 4
+
+19.flat 
+-Dùng để làm phẳng array theo level phẳng 
+VD : arrays = [1, 2, 3, [4, 5]];
+     console.log(arrays.flat()) //mặc định là level 1 --> [1, 2, 3, 4, 5];
+
+20.flatMap : là gộp giữa flat level 1 + map method 
+
 
 Bonus: 
 -Có thể thêm element DOM bằng : Append, AppendChild(Node), insertAdjectHTML, innerHTML
 -Nếu có tác vụ nào đó cần phải loại bỏ những element cũ thì có thể xóa bằng : while loop + remove hoặc innerHTML = ``; (rcm 2)
 -innerHTML không chỉ đơn thuần trả về text của element đó, mà bao gồm cả thẻ HTML + text chứa bên trong nó, 
     nên nhiều người dùng innerHTML để thêm element vào DOM
+
+-Element.blur() --> removes focus from an element
 
 
 
